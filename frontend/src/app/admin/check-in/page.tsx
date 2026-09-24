@@ -395,7 +395,7 @@ export default function AdminCheckInPage() {
                   </div>
                   <div id="camera-qr-reader" className="w-full max-w-sm mx-auto overflow-hidden rounded-xl border border-primary/30" />
                   <p className="text-[11px] text-slate-400 font-mono">
-                    Hold attendee&apos;s pass QR matrix steadily in front of lens.
+                    Hold attendee's pass QR matrix steadily in front of lens.
                   </p>
                 </div>
               )}

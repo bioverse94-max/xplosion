@@ -1,0 +1,149 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=JetBrains+Mono:wght@400;600;700;800&family=Oswald:wght@500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 3 3 3;
+    --surface: 8 8 8;
+    --surface-border: 31 31 31;
+    --primary: 255 0 0;
+    --font-display: 'Bebas Neue', 'Anton', sans-serif;
+    --font-heading: 'Oswald', sans-serif;
+    --font-sans: 'Outfit', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    @apply bg-background text-[#F5F5F5] antialiased min-h-screen selection:bg-[#FF0000] selection:text-black;
+    background-color: #030303;
+    color: #F5F5F5;
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3 {
+    letter-spacing: -0.02em;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   XPLOSION 2K26 — VISUAL ENGINE PRIMITIVES & UTILITIES
+   ═══════════════════════════════════════════════════════════ */
+
+/* Editorial Glows */
+.glow-red {
+  text-shadow: 0 0 25px rgba(255, 0, 0, 0.7);
+}
+
+.glow-red-lg {
+  text-shadow: 0 0 50px rgba(255, 0, 0, 0.9), 0 0 20px rgba(255, 0, 0, 0.6);
+}
+
+.glow-red-subtle {
+  text-shadow: 0 0 12px rgba(255, 0, 0, 0.4);
+}
+
+/* Outlined Display Typography */
+.text-stroke-red {
+  -webkit-text-stroke: 1.5px #FF0000;
+  color: transparent;
+}
+
+.text-stroke-white {
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.85);
+  color: transparent;
+}
+
+.text-stroke-thick {
+  -webkit-text-stroke: 2.5px rgba(255, 255, 255, 0.9);
+  color: transparent;
+}
+
+/* Glass Panels with Dark Aggressive Tone */
+.glass-panel {
+  background: rgba(8, 8, 8, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-hover {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel-hover:hover {
+  border-color: rgba(255, 0, 0, 0.5);
+  box-shadow: 0 0 30px -5px rgba(255, 0, 0, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Aggressive Red Border */
+.red-edge-border {
+  border: 1px solid rgba(255, 0, 0, 0.45);
+  box-shadow: inset 0 0 15px -3px rgba(255, 0, 0, 0.2), 0 0 25px -5px rgba(255, 0, 0, 0.3);
+}
+
+/* Noise & Grain Overlay */
+.noise-bg {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Grunge Slanted Cuts */
+.cut-corner-br {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+}
+
+.cut-corner-tl-br {
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+
+.cut-slant {
+  clip-path: polygon(0 0, 100% 0, 95% 100%, 0% 100%);
+}
+
+/* Red Stencil Watermark */
+.stencil-mark {
+  position: relative;
+}
+.stencil-mark::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background-color: #FF0000;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #030303;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #222222;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FF0000;
+}
+
+/* Responsive Red Light Sweeps */
+@keyframes sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.animate-sweep {
+  animation: sweep 2.5s infinite linear;
+}

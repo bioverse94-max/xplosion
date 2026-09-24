@@ -1,0 +1,247 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ----------------------------------------------------
+// CORE ENTITIES
+// ----------------------------------------------------
+
+model AdminUser {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String
+  passwordHash String
+  role         String     @default("CHECKIN_STAFF") // SUPER_ADMIN | EVENT_ADMIN | CHECKIN_STAFF | FINANCE_VIEWER
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  checkIns     CheckIn[]
+  auditLogs    AuditLog[]
+
+  @@map("admin_users")
+}
+
+model Event {
+  id            String         @id @default(cuid())
+  slug          String         @unique
+  title         String
+  tagline       String
+  description   String
+  venueName     String
+  venueAddress  String
+  city          String
+  date          DateTime
+  doorsOpenTime String
+  rulesJson     String         // JSON string array of rules
+  faqsJson      String         // JSON string array of FAQs
+  bannerImage   String
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  ticketTypes   TicketType[]
+  registrations Registration[]
+  passes        Pass[]
+  checkIns      CheckIn[]
+
+  @@map("events")
+}
+
+model TicketType {
+  id                String             @id @default(cuid())
+  eventId           String
+  event             Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name              String             // e.g. "Early Bird Pass", "VIP Access", "Stag Female Pass", "Couple Pass"
+  tierCode          String             // e.g. "EARLY_BIRD", "VIP", "REGULAR", "COUPLE"
+  price             Int                // In INR Rupees (or lowest unit)
+  currency          String             @default("INR")
+  capacity          Int
+  soldCount         Int                @default(0)
+  reservedCount     Int                @default(0)
+  maxPerOrder       Int                @default(5)
+  benefitsJson      String             // JSON string array of perks/features
+  saleStart         DateTime
+  saleEnd           DateTime
+  isVisible         Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  registrationItems RegistrationItem[]
+
+  @@index([eventId])
+  @@map("ticket_types")
+}
+
+model Attendee {
+  id            String         @id @default(cuid())
+  fullName      String
+  email         String         @unique // College / Primary Email
+  personalEmail String?        // Personal Email for pass delivery & ticket backup
+  phone         String         @unique
+  phoneVerified Boolean        @default(false)
+  emailVerified Boolean        @default(false)
+  college       String
+  academicYear  String
+  branch        String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  registrations Registration[]
+  passes        Pass[]
+
+  @@index([email])
+  @@index([personalEmail])
+  @@index([phone])
+  @@map("attendees")
+}
+
+model Registration {
+  id             String             @id @default(cuid())
+  registrationNo String             @unique // e.g. "FRS26-4892"
+  eventId        String
+  event          Event              @relation(fields: [eventId], references: [id])
+  attendeeId     String
+  attendee       Attendee           @relation(fields: [attendeeId], references: [id])
+  status         String             @default("PENDING") // PENDING | CONFIRMED | CANCELLED | EXPIRED
+  subtotal       Int
+  platformFee    Int                @default(0)
+  taxAmount      Int                @default(0)
+  totalAmount    Int
+  currency       String             @default("INR")
+  expiresAt      DateTime?          // Reservation expiration hold (10 min lock)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  items          RegistrationItem[]
+  payment        Payment?
+  passes         Pass[]
+
+  @@index([eventId])
+  @@index([attendeeId])
+  @@index([status])
+  @@map("registrations")
+}
+
+model RegistrationItem {
+  id             String       @id @default(cuid())
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  ticketTypeId   String
+  ticketType     TicketType   @relation(fields: [ticketTypeId], references: [id])
+  quantity       Int
+  unitPrice      Int
+  subtotal       Int
+
+  @@index([registrationId])
+  @@index([ticketTypeId])
+  @@map("registration_items")
+}
+
+model Payment {
+  id               String        @id @default(cuid())
+  registrationId   String        @unique
+  registration     Registration  @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  gatewayOrderId   String        @unique // Gateway Order ID (e.g. order_xxx or mock_ord_xxx)
+  gatewayPaymentId String?       @unique // Gateway Transaction / Payment ID / UPI UTR
+  paymentMethod    String        @default("UPI_QR") // UPI_QR | CARD | NETBANKING | MOCK
+  payerUpiId       String?       // Payer's VPA / UPI ID if provided
+  adminNotes       String?       // Organizer or verification notes
+  verifiedBy       String?       // Admin who verified or "SYSTEM_AUTO"
+  verifiedAt       DateTime?     // Verification timestamp
+  gatewaySignature String?
+  amount           Int
+  currency         String        @default("INR")
+  status           String        @default("INITIATED") // INITIATED | PENDING_VERIFICATION | SUCCESS | FAILED | REFUNDED
+  rawWebhookJson   String?
+  paidAt           DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  refund           Refund?
+
+  @@index([status])
+  @@index([gatewayPaymentId])
+  @@map("payments")
+}
+
+model Pass {
+  id             String     @id @default(cuid())
+  passCode       String     @unique // e.g. "PASS-FRS26-8941"
+  eventId        String
+  event          Event      @relation(fields: [eventId], references: [id])
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id])
+  attendeeId     String
+  attendee       Attendee   @relation(fields: [attendeeId], references: [id])
+  ticketTypeName String
+  qrToken        String     @unique // Opaque cryptographic token with HMAC signature
+  status         String     @default("VALID") // VALID | CHECKED_IN | REVOKED
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  checkIn        CheckIn?
+
+  @@index([eventId])
+  @@index([attendeeId])
+  @@index([qrToken])
+  @@index([status])
+  @@map("passes")
+}
+
+model CheckIn {
+  id           String     @id @default(cuid())
+  passId       String     @unique
+  pass         Pass       @relation(fields: [passId], references: [id])
+  eventId      String
+  event        Event      @relation(fields: [eventId], references: [id])
+  operatorId   String?
+  operator     AdminUser? @relation(fields: [operatorId], references: [id])
+  operatorName String
+  gateLocation String     @default("Main Entrance")
+  checkedInAt  DateTime   @default(now())
+
+  @@index([eventId])
+  @@index([operatorId])
+  @@map("check_ins")
+}
+
+model Refund {
+  id           String   @id @default(cuid())
+  paymentId    String   @unique
+  payment      Payment  @relation(fields: [paymentId], references: [id])
+  refundAmount Int
+  reason       String
+  processedBy  String
+  createdAt    DateTime @default(now())
+
+  @@map("refunds")
+}
+
+model NotificationLog {
+  id          String   @id @default(cuid())
+  recipient   String
+  channel     String   // "EMAIL", "SMS", "WHATSAPP"
+  template    String   // "PASS_CONFIRMATION", "EVENT_REMINDER"
+  status      String   // "SENT", "FAILED"
+  payloadJson String
+  sentAt      DateTime @default(now())
+
+  @@index([recipient])
+  @@map("notification_logs")
+}
+
+model AuditLog {
+  id          String     @id @default(cuid())
+  adminId     String?
+  admin       AdminUser? @relation(fields: [adminId], references: [id])
+  action      String     // e.g. "CHECKIN_PASS", "UPDATE_TICKET_PRICE", "REFUND_PAYMENT", "ADMIN_LOGIN"
+  entityType  String     // "Pass", "TicketType", "Payment", "AdminUser"
+  entityId    String?
+  detailsJson String?
+  ipAddress   String?
+  createdAt   DateTime   @default(now())
+
+  @@index([adminId])
+  @@index([action])
+  @@map("audit_logs")
+}
