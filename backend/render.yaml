@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: freshers-backend
+    env: node
+    plan: free
+    region: singapore # or oregon, frankfurt, etc.
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false # Set in Render Dashboard from Supabase (port 6543)
+      - key: DIRECT_URL
+        sync: false # Set in Render Dashboard from Supabase (port 5432)
+      - key: FRONTEND_URL
+        sync: false # Set to your Vercel deployment URL (e.g. https://your-project.vercel.app)
+      - key: HMAC_SECRET
+        generateValue: true
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: AUTO_APPROVE_PAYMENTS
+        value: "true"
+      - key: NOTIFICATION_PROVIDER
+        value: "SMTP"
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: EMAIL_FROM
+        value: "Neon Genesis 2026 Ticketing <tickets@neongenesis2026.com>"
