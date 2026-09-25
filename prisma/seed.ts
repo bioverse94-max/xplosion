@@ -52,9 +52,13 @@ async function main() {
   const rules = [
     "Valid physical college ID card along with digital entry pass is strictly mandatory.",
     "Entry strictly restricted to registered attendees (Age 18+). Government photo ID required.",
-    "Doors open at 12:00 PM onwards. No re-entry allowed once checked in.",
+    "Doors open at 12:00 PM onwards. 🔁 One Entry Only: Each person will be allowed one entry only. Re-entry will not be permitted.",
     "Prohibited items: Outside food/beverages, weapons, illegal substances, sharp objects.",
     "Dress Code: Nightlife Glam / Grunge Chic / Upscale Streetwear.",
+    "💳 Payment After Entry: After entering the venue, you may purchase anything you want as per your choice. Scan & Pay will be available for purchases.",
+    "🚫 No Alcohol Before Entry: Drinking alcohol before entering the venue is strictly prohibited. Please arrive sober and maintain proper discipline.",
+    "🤝 Maintain Decorum: Everyone is requested to behave responsibly, respect others, and follow the instructions of the organizers and venue staff.",
+    "⚠️ Follow the Rules: Any person creating a disturbance or violating the rules may be asked to leave.",
     "The venue management and organizing council reserve the right of admission.",
   ];
 
